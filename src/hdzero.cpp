@@ -4,10 +4,27 @@
 #include "logging.h"
 #include "time.h"
 
+#if defined(C5VRX_USB_MIRROR)
+// C5VRX bench test: echo each channel command on the S3's USB port, since
+// the real link (UART0 TX) is not visible from the host.
+static const char C5VRX_BANDS[] = "ABEFRL";
+static const uint16_t C5VRX_MHZ[48] = {  // ELRS order, as in rx5808.h
+    5865, 5845, 5825, 5805, 5785, 5765, 5745, 5725,
+    5733, 5752, 5771, 5790, 5809, 5828, 5847, 5866,
+    5705, 5685, 5665, 5645, 5885, 5905, 5925, 5945,
+    5740, 5760, 5780, 5800, 5820, 5840, 5860, 5880,
+    5658, 5695, 5732, 5769, 5806, 5843, 5880, 5917,
+    5333, 5373, 5413, 5453, 5493, 5533, 5573, 5613};
+#endif
+
 void
 HDZero::Init()
 {
     ModuleBase::Init();
+#if defined(C5VRX_USB_MIRROR)
+    USBSerial.begin();
+    USBSerial.println("C5VRX backpack: HDZero MSP on UART0 TX=GPIO43 115200");
+#endif
 }
 
 void
@@ -55,6 +72,13 @@ HDZero::SetChannelIndex(uint8_t index)
     packet.addByte(index);  // payload
 
     msp.sendPacket(&packet, m_port);
+#if defined(C5VRX_USB_MIRROR)
+    if (index < 48)
+        USBSerial.printf("C5VRX backpack: SET_CHANNEL_INDEX %u = %c%u %u MHz\n", index,
+                         C5VRX_BANDS[index / 8], index % 8 + 1, C5VRX_MHZ[index]);
+    else
+        USBSerial.printf("C5VRX backpack: SET_CHANNEL_INDEX %u\n", index);
+#endif
 }
 
 uint8_t

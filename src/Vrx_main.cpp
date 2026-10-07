@@ -435,6 +435,9 @@ RF_PRE_INIT()
 
 void setup()
 {
+  #if defined(C5VRX_USB_MIRROR)
+    USBSerial.begin();  // C5VRX bench test: USB log from the first line
+  #endif
   #if !defined(HDZERO_BACKPACK)
     // Serial.begin() seems to prevent the HDZ VRX from booting
     // If we're not on HDZ, init serial early for debug msgs
