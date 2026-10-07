@@ -30,6 +30,18 @@ HDZero::Init()
 void
 HDZero::SendIndexCmd(uint8_t index)
 {
+#if defined(C5VRX_ONE_WIRE)
+    // C5VRX: TX-only link, the receiver cannot answer GET_CHANNEL_INDEX.
+    // Send twice back to back; the main loop also repeats it every 2 s.
+    SetChannelIndex(index);
+    SetChannelIndex(index);
+#if defined(C5VRX_USB_MIRROR)
+    if (index < 48)
+        USBSerial.printf("C5VRX backpack: SET_CHANNEL_INDEX %u = %c%u %u MHz\n", index,
+                         C5VRX_BANDS[index / 8], index % 8 + 1, C5VRX_MHZ[index]);
+#endif
+    return;
+#endif
     uint8_t retries = 3;
     while (GetChannelIndex() != index && retries > 0)
     {
@@ -72,7 +84,7 @@ HDZero::SetChannelIndex(uint8_t index)
     packet.addByte(index);  // payload
 
     msp.sendPacket(&packet, m_port);
-#if defined(C5VRX_USB_MIRROR)
+#if defined(C5VRX_USB_MIRROR) && !defined(C5VRX_ONE_WIRE)
     if (index < 48)
         USBSerial.printf("C5VRX backpack: SET_CHANNEL_INDEX %u = %c%u %u MHz\n", index,
                          C5VRX_BANDS[index / 8], index % 8 + 1, C5VRX_MHZ[index]);

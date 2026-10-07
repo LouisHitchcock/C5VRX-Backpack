@@ -72,6 +72,10 @@ bool sendChannelChangesToVrx = false;
 bool sendHeadTrackingChangesToVrx = false;
 bool sendRTCChangesToVrx = false;
 bool gotInitialPacket = false;
+#if defined(C5VRX_ONE_WIRE)
+static bool c5vrxHaveIndex = false;
+static uint32_t c5vrxLastRepeat = 0;
+#endif
 bool headTrackingEnabled = false;
 uint32_t lastSentRequest = 0;
 
@@ -521,7 +525,20 @@ void loop()
   {
     sendChannelChangesToVrx = false;
     vrxModule.SendIndexCmd(cachedIndex);
+#if defined(C5VRX_ONE_WIRE)
+    c5vrxHaveIndex = true;
+    c5vrxLastRepeat = now;
+#endif
   }
+#if defined(C5VRX_ONE_WIRE)
+  // C5VRX: repeat the current channel so a receiver that booted late (or
+  // rebooted) still converges; it ignores the channel it is already on.
+  if (c5vrxHaveIndex && now - c5vrxLastRepeat >= 2000)
+  {
+    c5vrxLastRepeat = now;
+    vrxModule.SetChannelIndex(cachedIndex);
+  }
+#endif
   if (sendHeadTrackingChangesToVrx)
   {
     sendHeadTrackingChangesToVrx = false;
