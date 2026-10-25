@@ -2,6 +2,7 @@ name: Build ExpressLRS Backpack
 on: [push, pull_request]
 jobs:
   validate:
+    if: github.repository == 'ExpressLRS/Backpack'
     runs-on: ubuntu-latest
     steps:
     - name: Checkout

@@ -5,7 +5,7 @@
 #include "time.h"
 
 #if defined(C5VRX_USB_MIRROR)
-// C5VRX bench test: echo each channel command on the S3's USB port, since
+// C5VRX bench test: echo each channel command on the backpack's USB port, since
 // the real link (UART0 TX) is not visible from the host.
 static const char C5VRX_BANDS[] = "ABEFRL";
 static const uint16_t C5VRX_MHZ[48] = {  // ELRS order, as in rx5808.h
@@ -23,7 +23,11 @@ HDZero::Init()
     ModuleBase::Init();
 #if defined(C5VRX_USB_MIRROR)
     USBSerial.begin();
+#if defined(CONFIG_IDF_TARGET_ESP32C3)
+    USBSerial.println("C5VRX backpack: HDZero MSP on UART0 TX=GPIO21 115200");
+#else
     USBSerial.println("C5VRX backpack: HDZero MSP on UART0 TX=GPIO43 115200");
+#endif
 #endif
 }
 

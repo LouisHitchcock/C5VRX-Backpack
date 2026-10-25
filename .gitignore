@@ -6,3 +6,12 @@ __pycache__
 *.pyc
 include/WebContent.h
 super_defines.txt
+
+# Local bindings, generated releases and bench captures.
+dist/
+*.bin
+*.zip
+*.log
+*_capture.txt
+*_log.txt
+s3_*.txt
